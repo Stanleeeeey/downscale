@@ -33,7 +33,7 @@ data = MNIST(os.getcwd())
 #train_images, train_labels = data.load_training()
 #loading test_images and labels for them
 test_images, test_labels = data.load_testing()
-print(np.array(test_images).shape)
+
 #shows image with given index of givrn type train/test
 def show_image(type:str, index:int):
     '''
@@ -57,27 +57,54 @@ def show_image(type:str, index:int):
 #       show_image("test", 200)
 
 class Network():
-    def __init__(self, sizes, data,labels, learning_rate = 0.1):
+    def __init__(self, sizes):
         self.sizes = sizes #[784, 30, 10]
+        
+        #self.num_layers = len(self.sizes)
+
+        #self.batch_size = data.shape[-1] # = 100
+
+        #self.learning_rate = learning_rate
+
+        self.biases  = np.array([np.random.randn(y,1 ) for y in sizes[1:]],  dtype = object)
+        
+        self.weights = np.array([np.random.randn(y, x) for x,y in zip(sizes[:-1], sizes[1:])], dtype = object)
+        
+        self.activtions    = []
+        self.weightedinput = []
+        
+
+
+        #self.data   = data
+        #self.y = np.array([np.insert(np.zeros(9), i, 1) for i in labels]).T
+
+    def _toarray(self, labels):
+        return np.array([np.insert(np.zeros(9), i, 1) for i in labels]).T
+
+    def train(self, data, labels, learning_rate):
+        if data.shape[-1] != labels.shape[-1]:
+            raise Exception("not matching labels and data")
+
         self.num_layers = len(self.sizes)
 
         self.batch_size = data.shape[-1] # = 100
 
         self.learning_rate = learning_rate
 
-        self.biases  = [np.random.randn(y,1 ) for y in sizes[1:]]
-        self.weights = [np.random.randn(y, x) for x,y in zip(sizes[:-1], sizes[1:])]
-        
-        self.activtions    = []
-        self.weightedinput = []
-        
-        if data.shape[-1] != labels.shape[-1]:
-            raise Exception("not matching labels and data")
-
         self.data   = data
-        self.y = np.array([np.insert(np.zeros(9), i, 1) for i in labels]).T
+        self.y = self._toarray(labels)
 
-        
+        self._update()
+
+    def _update(self):
+        bias_gr, weigth_gr = self.backpropagate()
+
+        for layer in range(len(self.sizes[1:])):
+
+            self.biases[layer]  -= np.array(bias_gr[layer].mean(axis = 1)).reshape(self.sizes[layer+1],1)*self.learning_rate
+
+
+        self.weights -= np.array(weigth_gr, dtype=object)*self.learning_rate
 
     def feedforward(self,x):
         a = x
@@ -95,7 +122,7 @@ class Network():
         error = np.array(cost_derivative(self.feedforward(self.data), self.y))
 
         bias_gradient   = [np.zeros((len(bias),self.batch_size)) for bias in self.biases] #CREATING LIST FOR BIAS GRADIENTS
-        weight_gradient = [np.zeros((len(weight),self.batch_size)) for weight in self.weights] #CREATING LIST FOR WEIGHT GRADIENTS
+        weight_gradient = [np.zeros((weight.shape[0],weight.shape[1])) for weight in self.weights] #CREATING LIST FOR WEIGHT GRADIENTS
 
 
         bias_gradient[-1]   = error #LAST LAYER 
@@ -113,10 +140,19 @@ class Network():
 
         return bias_gradient, weight_gradient
 
-print(np.array(test_images[300:400]).T.shape)
-model = Network([784,30,10],np.array(test_images[300:300+100]).T,np.array(test_labels[300:400]), 100)
-model.backpropagate()
+    def _tonum(self, x):
+        return np.argmax(x)
 
+    def predict(self, data):
+        
+        return self._tonum(self.feedforward(data).mean(axis=1))
+
+
+
+model = Network([784,30,10],)
+model.train(np.array(test_images[300:300+100]).T,np.array(test_labels[300:400]), 100)
+model.backpropagate()
+print(model.predict(np.array(test_images[300]).T, ))
 
 #show_image('test',300)
 
