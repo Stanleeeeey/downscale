@@ -141,7 +141,7 @@ class Network():
         return bias_gradient, weight_gradient
 
     def _tonum(self, x):
-        return np.argmax(x)
+        return list(x).index(max(list(x)))+1
 
     def predict(self, data):
         
@@ -152,7 +152,9 @@ class Network():
 model = Network([784,30,10],)
 model.train(np.array(test_images[300:300+100]).T,np.array(test_labels[300:400]), 100)
 model.backpropagate()
-print(model.predict(np.array(test_images[300]).T, ))
+#
+# print(model.predict(np.array(test_images[300]).T, ))
 
 #show_image('test',300)
+
 
