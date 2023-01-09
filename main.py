@@ -37,14 +37,15 @@ error      = 0.01
 i = 0
 err = 1
 
-batch = slice(200,210, 1)
+batch = slice(200,230, 1)
 
 img_batch = np.array(imgs[batch]).T.astype(float)/256
 lbl_batch = labels[batch]
 lbl_img_batch = encode(lbl_batch)
 
+
 while i <iterations and err >error:
     i+=1
-    net, err = Update(*net, img_batch, lbl_img_batch, 1)
+    net, err = Update(*net, img_batch, lbl_img_batch, .001)
     print(f"iteration {i}, error {err}")
 

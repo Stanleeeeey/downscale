@@ -1,7 +1,13 @@
 import numpy as np
 
-def encode(model_input):
-    return np.argmax(model_input, axis= 0)
+def encode(lbls):
+    nb = len(lbls)
+    aL = np.zeros([10, nb], dtype = float)
+    aL[lbls, np.arange(nb)] = 1
+    return aL
+
+def decode(aL):
+    return np.argmax(aL, axis= 0)
 
 def sigma(x):
     if x<0.:
@@ -16,8 +22,13 @@ def sgm_prime(x):
 
 def forward(biases, weights, model_input):
     layer = model_input
+
+
     for bias, weight in zip(biases, weights):
-        layer = sgm(layer@weight +bias)
+        
+        
+        layer = sgm(weight@layer + bias)
+
 
     return layer 
 
@@ -43,7 +54,7 @@ def Update(biases, weights, model_input, label, learning_rate):
         a.append(layer)
 
     error = np.linalg.norm(a[-1] - label)/batch_size
-
+    
     dlt = (a[-1]-label)*sgm_prime(z[-1]) /batch_size
 
     new_biases, new_weights = biases, weights
