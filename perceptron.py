@@ -53,6 +53,7 @@ def Update(biases, weights, model_input, label, learning_rate):
         layer = sgm(zi)
         a.append(layer)
 
+    
     error = np.linalg.norm(a[-1] - label)/batch_size
     
     dlt = (a[-1]-label)*sgm_prime(z[-1]) /batch_size
