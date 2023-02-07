@@ -1,5 +1,5 @@
 # DOCS
-
+FIXING ISSUES
 ### `train_images`
 
 array of train images 28x28
