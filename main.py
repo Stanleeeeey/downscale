@@ -1,9 +1,11 @@
+
 from perceptron import *
 from mnist import MNIST
-
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+
+
 
 
 def load_data():
@@ -18,6 +20,7 @@ def load_data():
     print(f'loaded {len(test_images)} testing images and labels')
     return images, labels, test_images, test_labels
 
+
 def show_img(images, labels, index):
     width = int(np.sqrt(len(images[index])))
 
@@ -29,58 +32,38 @@ def show_img(images, labels, index):
 
     plt.show()
 
-imgs,labels, test_images, test_labels = load_data()
 
+imgs, lbls, test_imgs, test_lbls = load_data()
+net = init_network([784, 30, 10])
 
-net = init_network([784, 30,10])
-print(f'network initialized')
+def img_batch(batch): return np.array(imgs[batch]).T.astype(float)/256.
+def lbl_batch(batch): return lbls[batch]
+def lbl_img_batch(batch): return encode(lbl_batch(batch))
 
-# goals
-iterations = 1000000
-error      = 0.001
+batches = [(img_batch(batch = slice(b, b+70, 1)), lbl_img_batch(slice(b, b+70, 1)), lbl_batch(slice(b, b+70, 1))) for b in range(0, 60000-70, 70)]
+# stopping conditions
+err_mx = 0.07
+cyc_mx = 2000
 
-i = 0
-err = 1
+# initial values of stopping conditions
+cyc = 0
+err = 0.1 #np.linalg.norm(forward(*net, img_batch) - lbl_img_batch)
 
-batch = [slice(i,i+70, 1) for i in range(0, 60000, 70)]
-
-
-img_batch = [np.array(imgs[i]).T.astype(float)/256 for i in batch]
-lbl_batch = [labels[i] for i in batch]
-lbl_img_batch = [encode(i) for i in lbl_batch]
-
-b = [slice(i,i+100, 1) for i in range(0, 10000, 100)]
-
-test_img_batch = [np.array(test_images[i]).T.astype(float)/256 for i in b]
-test_lbl_batch = [test_labels[i] for i in b]
-
-
-
-def GetAccuracy(biases, weights):
-
-    correct_sum = 0
-    x = 0
-    for img_b, lbl_b in zip(test_img_batch, test_lbl_batch):
+# iteration over one batch
+while cyc < cyc_mx and err > err_mx:
+    for img, lbl, lbl_batch in batches:
+        #$print(img, lbl, lbl_batch)
+        net, err = Update(*net, model_input=img, labels=lbl, learning_rate=0.3)
         
-        for ans, lbl in zip(forward(biases, weights, img_b).T, lbl_b):
-            #print(forward(biases, weights, img).shape)
-            #print(decode(i), lbl[num])
-            #print(i,lbl[:,num] , decode(i), decode(lbl[:,num]),  decode(i) == decode(lbl[:,num]))
-            if decode(ans) == lbl:
-                
-                correct_sum+=1
-            x+=1 
-    
-    print(correct_sum, x)
-    return correct_sum / x *100
+        error_batch = np.array(lbl_batch) - decode(forward(*net, img))
+        rel_error = np.linalg.norm(error_batch, ord = 0)/len(lbl_batch)
+        accuracy = 1. - rel_error
+    cyc += 1
 
+    print(f"iteration {cyc}, accuracy: {accuracy*100}%")
     
-while i <iterations and err >error:
-    i+=1
-    es = 0
-    for img, lbl in zip(img_batch, lbl_img_batch):
-        net, err = Update(*net, img, lbl, .001)
-        es+=err
-    print(f"iteration {i}, error {es/len(img_batch)}", end = " ")
-    print(f"iteration accuracy: {GetAccuracy(*net)}%")
-
+# report results    
+if err < err_mx:
+    print(f"converged after {cyc} cycles, error: {err}")
+else:
+    print(f"not converged after {cyc} cycles, error: {err}")
