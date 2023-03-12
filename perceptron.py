@@ -57,6 +57,7 @@ def Update(biases, weights, model_input, labels, learning_rate):
         a.append(ai)
 
     # norm
+    # (labels*np.log(a[-1]) + np.log(1-labels)*np.log(1-a[-1])).sum()/batch_size
     error = np.linalg.norm(a[-1] - labels)/batch_size
     
     # backward

@@ -42,7 +42,7 @@ def lbl_img_batch(batch): return encode(lbl_batch(batch))
 
 batches = [(img_batch(batch = slice(b, b+70, 1)), lbl_img_batch(slice(b, b+70, 1)), lbl_batch(slice(b, b+70, 1))) for b in range(0, 60000-70, 70)]
 # stopping conditions
-err_mx = 0.07
+err_mx = 0.02
 cyc_mx = 2000
 
 # initial values of stopping conditions
