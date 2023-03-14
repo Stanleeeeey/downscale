@@ -4,8 +4,10 @@ from mnist import MNIST
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import random
 
-
+BATCH_SIZE = 70
+NUMBER_OF_BATCHES = 10
 
 
 def load_data():
@@ -40,10 +42,14 @@ def img_batch(batch): return np.array(imgs[batch]).T.astype(float)/256.
 def lbl_batch(batch): return lbls[batch]
 def lbl_img_batch(batch): return encode(lbl_batch(batch))
 
-batches = [(img_batch(batch = slice(b, b+70, 1)), lbl_img_batch(slice(b, b+70, 1)), lbl_batch(slice(b, b+70, 1))) for b in range(0, 70*10, 70)]
+batches = [(img_batch(batch = slice(b, b+BATCH_SIZE, 1)), lbl_img_batch(slice(b, b+BATCH_SIZE, 1)), lbl_batch(slice(b, b+BATCH_SIZE, 1))) for b in range(0, BATCH_SIZE*NUMBER_OF_BATCHES, BATCH_SIZE)]
+
+test_batches = [(img_batch(batch = slice(b, b+BATCH_SIZE, 1)), lbl_batch(slice(b, b+BATCH_SIZE, 1))) for b in range(0, 10000 - BATCH_SIZE, BATCH_SIZE)]
+
+
 # stopping conditions
 err_mx = 0.02
-cyc_mx = 200
+cyc_mx = 400
 
 # initial values of stopping conditions
 cyc = 0
@@ -59,8 +65,9 @@ def strategy1():
             #$print(img, lbl, lbl_batch)
             net, err = Update(*net, model_input=img, labels=lbl, learning_rate=0.3)
             
-            error_batch = np.array(lbl_batch) - decode(forward(*net, img))
-            rel_error = np.linalg.norm(error_batch, ord = 0)/len(lbl_batch)
+            ind = random.randrange(0, len(test_batches), 1)
+            error_batch = np.array(test_batches[ind][1]) - decode(forward(*net, test_batches[ind][0]))
+            rel_error = np.linalg.norm(error_batch, ord = 0)/BATCH_SIZE
             accuracy = 1. - rel_error
         cyc += 1
 
@@ -79,8 +86,9 @@ def strategy2():
             #$print(img, lbl, lbl_batch)
             net, err = Update(*net, model_input=img, labels=lbl, learning_rate=0.3)
             
-            error_batch = np.array(lbl_batch) - decode(forward(*net, img))
-            rel_error = np.linalg.norm(error_batch, ord = 0)/len(lbl_batch)
+            ind = random.randrange(0, len(test_batches), 1)
+            error_batch = np.array(test_batches[ind][1]) - decode(forward(*net, test_batches[ind][0]))
+            rel_error = np.linalg.norm(error_batch, ord = 0)/BATCH_SIZE
             accuracy = 1. - rel_error
             cyc += 1
         i+=1
