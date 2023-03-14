@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import random
+import time
 
 BATCH_SIZE = 70
-NUMBER_OF_BATCHES = 10
+NUMBER_OF_BATCHES = 300
 
 
 def load_data():
@@ -49,7 +50,7 @@ test_batches = [(img_batch(batch = slice(b, b+BATCH_SIZE, 1)), lbl_batch(slice(b
 
 # stopping conditions
 err_mx = 0.02
-cyc_mx = 400
+cyc_mx = 200
 
 # initial values of stopping conditions
 cyc = 0
@@ -81,6 +82,7 @@ def strategy2():
     err = 0.1
     i = 0
     for img, lbl, lbl_batch in batches:
+        cyc = 0
         while cyc < cyc_mx and err > err_mx:
         
             #$print(img, lbl, lbl_batch)
@@ -95,14 +97,17 @@ def strategy2():
         print(f"iteration {i}, accuracy: {accuracy*100}%")
     return err
 
+start = time.time()
+
 err = strategy2()
-print(err)
+print(err, " ", time.time() - start)
 
 err = 1
 cyc = 0
 
+start = time.time()
 err = strategy1()
-print(err)
+print(err, " ", time.time() - start)
 
 # report results    
 if err < err_mx:
