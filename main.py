@@ -40,28 +40,62 @@ def img_batch(batch): return np.array(imgs[batch]).T.astype(float)/256.
 def lbl_batch(batch): return lbls[batch]
 def lbl_img_batch(batch): return encode(lbl_batch(batch))
 
-batches = [(img_batch(batch = slice(b, b+70, 1)), lbl_img_batch(slice(b, b+70, 1)), lbl_batch(slice(b, b+70, 1))) for b in range(0, 60000-70, 70)]
+batches = [(img_batch(batch = slice(b, b+70, 1)), lbl_img_batch(slice(b, b+70, 1)), lbl_batch(slice(b, b+70, 1))) for b in range(0, 70*10, 70)]
 # stopping conditions
 err_mx = 0.02
-cyc_mx = 2000
+cyc_mx = 200
 
 # initial values of stopping conditions
 cyc = 0
 err = 0.1 #np.linalg.norm(forward(*net, img_batch) - lbl_img_batch)
 
-# iteration over one batch
-while cyc < cyc_mx and err > err_mx:
-    for img, lbl, lbl_batch in batches:
-        #$print(img, lbl, lbl_batch)
-        net, err = Update(*net, model_input=img, labels=lbl, learning_rate=0.3)
-        
-        error_batch = np.array(lbl_batch) - decode(forward(*net, img))
-        rel_error = np.linalg.norm(error_batch, ord = 0)/len(lbl_batch)
-        accuracy = 1. - rel_error
-    cyc += 1
+def strategy1():
+    net = init_network([784, 30, 10])
 
-    print(f"iteration {cyc}, accuracy: {accuracy*100}%")
-    
+    cyc = 0
+    err = 0.1
+    while cyc < cyc_mx and err > err_mx:
+        for img, lbl, lbl_batch in batches:
+            #$print(img, lbl, lbl_batch)
+            net, err = Update(*net, model_input=img, labels=lbl, learning_rate=0.3)
+            
+            error_batch = np.array(lbl_batch) - decode(forward(*net, img))
+            rel_error = np.linalg.norm(error_batch, ord = 0)/len(lbl_batch)
+            accuracy = 1. - rel_error
+        cyc += 1
+
+        print(f"iteration {cyc}, accuracy: {accuracy*100}%")
+    return err
+
+def strategy2():
+    net = init_network([784, 30, 10])
+
+    cyc = 0
+    err = 0.1
+    i = 0
+    for img, lbl, lbl_batch in batches:
+        while cyc < cyc_mx and err > err_mx:
+        
+            #$print(img, lbl, lbl_batch)
+            net, err = Update(*net, model_input=img, labels=lbl, learning_rate=0.3)
+            
+            error_batch = np.array(lbl_batch) - decode(forward(*net, img))
+            rel_error = np.linalg.norm(error_batch, ord = 0)/len(lbl_batch)
+            accuracy = 1. - rel_error
+            cyc += 1
+        i+=1
+        print(f"iteration {i}, accuracy: {accuracy*100}%")
+    return err
+
+err = strategy2()
+print(err)
+
+err = 1
+cyc = 0
+
+err = strategy1()
+print(err)
+
 # report results    
 if err < err_mx:
     print(f"converged after {cyc} cycles, error: {err}")
