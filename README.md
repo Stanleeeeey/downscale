@@ -33,5 +33,5 @@ shows image of given time and index
 
 | batches| 3|10|30|100|300|max|
 |--------|------|-|-|-|-|-|
-|str1| acc: 34% t: 5.95|acc: 54% t: 19|acc: 80% t: 58|acc: 72% t: 203|
-|str2| acc: 27% t: 5.96|acc: 54% t: 19|acc: 77% t: 57|acc: 80% t: 189|
+|str1| acc: 34% t: 5.95|acc: 54% t: 19|acc: 80% t: 58|acc: 72% t: 203|acc: 85% t: 544|acc: 94% t: 1730|
+|str2| acc: 27% t: 5.96|acc: 54% t: 19|acc: 77% t: 57|acc: 80% t: 189|acc: 78% t: 607|acc: 92% t: 1712|

@@ -8,7 +8,7 @@ import random
 import time
 
 BATCH_SIZE = 70
-NUMBER_OF_BATCHES = 300
+NUMBER_OF_BATCHES = 60000 // 70
 
 
 def load_data():
