@@ -18,6 +18,7 @@ def load_data():
     test_images, test_labels = data.load_testing()
 
     print(f'loaded {len(test_images)} testing images and labels')
+
     return images, labels, test_images, test_labels
 
 
@@ -43,24 +44,26 @@ def lbl_img_batch(batch): return encode(lbl_batch(batch))
 batches = [(img_batch(batch = slice(b, b+70, 1)), lbl_img_batch(slice(b, b+70, 1)), lbl_batch(slice(b, b+70, 1))) for b in range(0, 60000-70, 70)]
 # stopping conditions
 err_mx = 0.02
-cyc_mx = 2000
+cyc_mx = 200
 
 # initial values of stopping conditions
 cyc = 0
 err = 0.1 #np.linalg.norm(forward(*net, img_batch) - lbl_img_batch)
 
 # iteration over one batch
-while cyc < cyc_mx and err > err_mx:
-    for img, lbl, lbl_batch in batches:
+#while cyc < cyc_mx and err > err_mx:
+for img, lbl, lbl_batch in batches[:10]:
         #$print(img, lbl, lbl_batch)
-        net, err = Update(*net, model_input=img, labels=lbl, learning_rate=0.3)
-        
-        error_batch = np.array(lbl_batch) - decode(forward(*net, img))
-        rel_error = np.linalg.norm(error_batch, ord = 0)/len(lbl_batch)
-        accuracy = 1. - rel_error
-    cyc += 1
+        cyc=0
+        while cyc < cyc_mx and err > err_mx:
+            net, err = Update(*net, model_input=img, labels=lbl, learning_rate=0.3)
+            
+            error_batch = np.array(batches[11][2]) - decode(forward(*net, batches[11][0]))
+            rel_error = np.linalg.norm(error_batch, ord = 0)/len(batches[11][2])
+            accuracy = 1. - rel_error
+            cyc += 1
 
-    print(f"iteration {cyc}, accuracy: {accuracy*100}%")
+        print(f"iteration {cyc}, accuracy: {accuracy*100}%")
     
 # report results    
 if err < err_mx:
