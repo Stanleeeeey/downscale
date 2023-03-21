@@ -21,7 +21,6 @@ def load_data():
     test_images, test_labels = data.load_testing()
 
     print(f'loaded {len(test_images)} testing images and labels')
-
     return images, labels, test_images, test_labels
 
 
@@ -57,19 +56,59 @@ cyc_mx = 200
 cyc = 0
 err = 0.1 #np.linalg.norm(forward(*net, img_batch) - lbl_img_batch)
 
-# iteration over one batch
-while cyc < cyc_mx and err > err_mx:
-    for img, lbl, lbl_batch in batches:
-        #$print(img, lbl, lbl_batch)
-        net, err = Update(*net, model_input=img, labels=lbl, learning_rate=0.3)
-        
-        error_batch = np.array(lbl_batch) - decode(forward(*net, img))
-        rel_error = np.linalg.norm(error_batch, ord = 0)/len(lbl_batch)
-        accuracy = 1. - rel_error
-    cyc += 1
+def strategy1():
+    net = init_network([784, 30, 10])
 
-    print(f"iteration {cyc}, accuracy: {accuracy*100}%")
-    
+    cyc = 0
+    err = 0.1
+    while cyc < cyc_mx and err > err_mx:
+        for img, lbl, lbl_batch in batches:
+            #$print(img, lbl, lbl_batch)
+            net, err = Update(*net, model_input=img, labels=lbl, learning_rate=0.3)
+            
+            ind = random.randrange(0, len(test_batches), 1)
+            error_batch = np.array(test_batches[ind][1]) - decode(forward(*net, test_batches[ind][0]))
+            rel_error = np.linalg.norm(error_batch, ord = 0)/BATCH_SIZE
+            accuracy = 1. - rel_error
+        cyc += 1
+
+        print(f"iteration {cyc}, accuracy: {accuracy*100}%")
+    return err
+
+def strategy2():
+    net = init_network([784, 30, 10])
+
+    cyc = 0
+    err = 0.1
+    i = 0
+    for img, lbl, lbl_batch in batches:
+        cyc = 0
+        while cyc < cyc_mx and err > err_mx:
+        
+            #$print(img, lbl, lbl_batch)
+            net, err = Update(*net, model_input=img, labels=lbl, learning_rate=0.3)
+            
+            ind = random.randrange(0, len(test_batches), 1)
+            error_batch = np.array(test_batches[ind][1]) - decode(forward(*net, test_batches[ind][0]))
+            rel_error = np.linalg.norm(error_batch, ord = 0)/BATCH_SIZE
+            accuracy = 1. - rel_error
+            cyc += 1
+        i+=1
+        print(f"iteration {i}, accuracy: {accuracy*100}%")
+    return err
+
+start = time.time()
+
+err = strategy2()
+print(err, " ", time.time() - start)
+
+err = 1
+cyc = 0
+
+start = time.time()
+err = strategy1()
+print(err, " ", time.time() - start)
+
 # report results    
 if err < err_mx:
     print(f"converged after {cyc} cycles, error: {err}")
