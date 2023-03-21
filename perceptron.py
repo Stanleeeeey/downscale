@@ -57,11 +57,11 @@ def Update(biases, weights, model_input, labels, learning_rate):
         a.append(ai)
 
     # norm
-    # (labels*np.log(a[-1]) + np.log(1-labels)*np.log(1-a[-1])).sum()/batch_size
-    error = np.linalg.norm(a[-1] - labels)/batch_size
+    # 
+    error = (labels*np.log(a[-1]) + np.log(1-labels)*np.log(1-a[-1])).sum()/batch_size #np.linalg.norm(a[-1] - labels)/batch_size
     
     # backward
-    dlt = (a[-1]-labels)*sgm_prime(z[-1]) /batch_size
+    dlt = a[-1] - labels #(a[-1]-labels)*sgm_prime(z[-1]) /batch_size
     
     # update 
     new_biases = biases
@@ -69,8 +69,8 @@ def Update(biases, weights, model_input, labels, learning_rate):
 
     for layer_index in range(len(weights)-1, 0, -1):
 
-        dlt = weights[layer_index].T@dlt * sgm_prime(z[layer_index-1])
-
+        dlt =  weights[layer_index].T@ dlt * sgm_prime(z[layer_index-1]) #weights[layer_index].T@dlt * sgm_prime(z[layer_index-1])
+    
 
 
         new_biases[layer_index-1][:,0] = new_biases[layer_index-1][:,0] - learning_rate*dlt.sum(axis=1)
