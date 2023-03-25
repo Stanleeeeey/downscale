@@ -1,4 +1,5 @@
-
+from PIL import Image
+from matplotlib import cm
 from perceptron import *
 from mnist import MNIST
 import matplotlib.pyplot as plt
@@ -7,8 +8,8 @@ import os
 import random
 import time
 
-BATCH_SIZE = 70
-NUMBER_OF_BATCHES = 60000 // 70
+BATCH_SIZE = 10
+NUMBER_OF_BATCHES = 60000 // BATCH_SIZE
 
 
 def load_data():
@@ -25,8 +26,9 @@ def load_data():
 
 
 def show_img(images, labels, index):
+    
     width = int(np.sqrt(len(images[index])))
-
+    print(width, np.array(images[index]).shape)
 
 
     plt.imshow(np.array(images[index]).reshape(width, width), cmap="gray", vmin = 0, vmax = 255)
@@ -35,8 +37,36 @@ def show_img(images, labels, index):
 
     plt.show()
 
+def rescale(image, new_size = (12,12)):
+    import math
+    x,y = new_size
+    
+    result = np.zeros(new_size)
+    image = np.array(image).reshape((28,28))
+    for xi in range(x):
+        for yi in range(y):
+            xl = math.floor(xi/x * 27)
+            xr = math.ceil(xi/x*27)
+            yl = math.floor(yi/y * 27)
+            yr = math.ceil(yi/y * 27)
+
+            result[xi][yi] = image[xl][yl]
+    '''
+
+    im = Image.fromarray(np.uint8(cm.gray(np.array(image).reshape(28, 28))*255))
+    im.show()
+    result = np.asarray(im.resize(new_size))#.reshape(x*y)
+    print(result.shape)
+    '''
+    return result
 
 imgs, lbls, test_imgs, test_lbls = load_data()
+
+
+show_img(imgs, lbls, 500)
+show_img([rescale(imgs[500])], [lbls[500]], 0)
+
+
 net = init_network([784, 30, 10])
 
 def img_batch(batch): return np.array(imgs[batch]).T.astype(float)/256.
@@ -72,7 +102,7 @@ def strategy1():
             accuracy = 1. - rel_error
         cyc += 1
 
-        print(f"iteration {cyc}, accuracy: {accuracy*100}%")
+        print(f"str 1 iteration {cyc}, accuracy: {accuracy*100}%")
     return err
 
 def strategy2():
@@ -94,7 +124,7 @@ def strategy2():
             accuracy = 1. - rel_error
             cyc += 1
         i+=1
-        print(f"iteration {i}, accuracy: {accuracy*100}%")
+        print(f"str 2 iteration {i}, accuracy: {accuracy*100}%")
     return err
 
 start = time.time()

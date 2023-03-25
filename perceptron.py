@@ -76,4 +76,4 @@ def Update(biases, weights, model_input, labels, learning_rate):
         new_biases[layer_index-1][:,0] = new_biases[layer_index-1][:,0] - learning_rate*dlt.sum(axis=1)
         new_weights[layer_index-1] = new_weights[layer_index-1] - learning_rate* (dlt@a[layer_index-1].T)
 
-    return [new_biases, new_weights], error
+    return [new_biases, new_weights], error 
